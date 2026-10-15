@@ -1,0 +1,466 @@
+/* Casa do Poço — versão base (v4)
+   Letras: Della Respira (só o nome no hero) + Bellefair (títulos e navegação) + Petrona 300 (frases e legendas).
+   Paleta: o granito da casa, o verde das cabeceiras e do sofá, o ferro das grades.
+   Fotos: nunca ampliadas além do original; sem zoom no hover. */
+
+:root {
+  --cal: #f5f2ec;
+  --linho: #ebe4d8;
+  --granito: #c9b99c;
+  --verde: #66794a;      /* cabeceiras dos quartos */
+  --sofa: #2f3527;       /* o sofá da sala, mais fundo: fundo dos quartos */
+  --ferro: #1b1d19;      /* grades e caixilhos: texto, botões, rodapé */
+  --tinta: #23251f;
+  --suave: #6c695e;
+  --placa: "Della Respira", Georgia, serif;
+  --display: "Bellefair", "Cormorant Garamond", Georgia, serif;
+  --serif: "Petrona", Georgia, serif;
+  --margem: clamp(18px, 4.4vw, 72px);
+  --secao: clamp(100px, 13vw, 190px);
+  --raio: clamp(12px, 1.2vw, 20px);
+  --sombra: 0 40px 80px -40px rgba(27, 29, 25, .45), 0 12px 26px -16px rgba(27, 29, 25, .22);
+  --suave-saida: cubic-bezier(.2, .7, .1, 1);
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; overflow-anchor: none; }
+html.lenis, html.lenis body { height: auto; }
+.lenis.lenis-smooth { scroll-behavior: auto !important; }
+body {
+  margin: 0;
+  background: var(--cal);
+  color: var(--tinta);
+  font-family: var(--serif);
+  font-weight: 300;
+  font-size: 17px;
+  line-height: 1.55;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+img { display: block; max-width: 100%; height: auto; }
+a { color: inherit; }
+button { font: inherit; color: inherit; }
+figure { margin: 0; }
+.invisivel { position: absolute !important; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.salto { position: absolute; left: 12px; top: -60px; z-index: 100; background: var(--ferro); color: var(--cal); padding: 10px 16px; border-radius: 999px; text-decoration: none; font-family: var(--display); }
+.salto:focus { top: 12px; }
+:focus-visible { outline: 2px solid var(--verde); outline-offset: 3px; }
+
+/* ============ TOPO ============ */
+.topo {
+  position: fixed; inset: 0 0 auto 0; z-index: 50;
+  display: grid; grid-template-columns: 1fr auto 1fr; align-items: center;
+  height: 80px; padding: 0 var(--margem);
+  color: #fff; font-family: var(--display);
+  transition: background-color .5s, color .5s, height .5s;
+}
+.topo.is-solido {
+  background: rgba(245, 242, 236, .78);
+  -webkit-backdrop-filter: blur(16px) saturate(1.2);
+  backdrop-filter: blur(16px) saturate(1.2);
+  color: var(--tinta);
+  height: 64px;
+}
+.marca { justify-self: start; text-decoration: none; font-size: 21px; letter-spacing: .02em; }
+.nav { display: flex; gap: clamp(26px, 3vw, 48px); font-size: 13.5px; letter-spacing: .26em; text-transform: uppercase; }
+.nav a { text-decoration: none; position: relative; }
+.nav a::after { content: ""; position: absolute; left: 0; right: .26em; bottom: -6px; height: 1px; background: currentColor; transform: scaleX(0); transform-origin: left; transition: transform .5s var(--suave-saida); }
+.nav a:hover::after { transform: scaleX(1); }
+/* reservar: só um contorno fino, sem fundo; enche-se ao passar o rato */
+.topo__reservar {
+  justify-self: end;
+  padding: 12px 24px; border: 1px solid currentColor; border-radius: 999px;
+  font-size: 13px; letter-spacing: .24em; text-transform: uppercase; text-decoration: none;
+  transition: background-color .4s, color .4s, border-color .4s;
+}
+.topo:not(.is-solido) .topo__reservar { border-color: rgba(255, 255, 255, .75); }
+.topo:not(.is-solido) .topo__reservar:hover { background: #fff; color: var(--ferro); border-color: #fff; }
+.topo.is-solido .topo__reservar:hover { background: var(--ferro); color: var(--cal); border-color: var(--ferro); }
+/* sobre a foto: texto branco com uma sombra difusa, sem caixas */
+.topo:not(.is-solido) { text-shadow: 0 1px 16px rgba(0, 0, 0, .5), 0 0 2px rgba(0, 0, 0, .25); }
+/* uma sombra leve só na faixa do menu, que se esvai antes da foto começar a contar */
+.topo::before { content: ""; position: absolute; inset: 0 0 -70px 0; z-index: -1; pointer-events: none; background: linear-gradient(rgba(14, 15, 12, .42), rgba(14, 15, 12, .16) 55%, rgba(14, 15, 12, 0)); transition: opacity .5s; }
+.topo.is-solido::before { opacity: 0; }
+
+
+/* ============ HERO ============
+   A foto na proporção original (3:2), inteira, sem corte nem transformação:
+   o hero tem a altura que a foto pede (a 1440 px de largura: 960 px).
+   O nome em Della Respira, uma romana clássica de caixa mista, com mais
+   presença do que uma letra fina. */
+.hero { position: relative; aspect-ratio: 2560 / 1707; overflow: hidden; background: #6f6656; color: #fff; }
+.hero__foto { position: absolute; inset: 0; width: 100%; height: 100%; }
+/* quando a foto é mais alta do que o ecrã, o nome sobe para ficar no primeiro ecrã */
+.hero__texto { position: absolute; left: var(--margem); bottom: max(calc(var(--margem) * .8), calc(66.68vw - 100svh + var(--margem) * .8)); }
+.hero__nome {
+  margin: 0;
+  font-family: var(--placa); font-weight: 400;
+  font-size: clamp(50px, 7.6vw, 144px); line-height: .98; letter-spacing: -.005em;
+  text-shadow: 0 2px 40px rgba(0, 0, 0, .34), 0 1px 3px rgba(0, 0, 0, .16);
+}
+.hero__linha { display: block; overflow: hidden; padding: .04em 0 .08em; }
+.hero__linha > span { display: block; }
+.js .hero__linha > span { transform: translateY(110%); transition: transform 1.6s var(--suave-saida); }
+.js .hero__linha + .hero__linha > span { transition-delay: .14s; }
+.is-pronto .hero__linha > span { transform: none; }
+/* a localização, discreta, por baixo do nome */
+.hero__onde {
+  margin: 20px 0 0 .1em; display: flex; flex-wrap: wrap; gap: 4px 18px;
+  font-family: var(--display); font-size: 12px; letter-spacing: .28em; text-transform: uppercase;
+  color: rgba(255, 255, 255, .84); text-shadow: 0 1px 12px rgba(0, 0, 0, .5);
+}
+.hero__onde span + span::before { content: "·"; margin-right: 18px; opacity: .7; }
+
+.botao-pilula {
+  display: inline-flex; align-items: center; gap: 18px;
+  background: #fff; color: var(--ferro);
+  padding: 6px 6px 6px 26px; border-radius: 999px;
+  font-family: var(--display); font-size: 12.5px; letter-spacing: .14em; text-transform: uppercase; text-decoration: none;
+  box-shadow: 0 12px 30px -14px rgba(0, 0, 0, .45);
+}
+.botao-pilula i { display: grid; place-items: center; width: 44px; height: 44px; border-radius: 50%; background: var(--ferro); color: #fff; transition: transform .45s var(--suave-saida), background-color .3s; }
+.botao-pilula svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
+.botao-pilula:hover i { transform: translateX(3px); background: var(--verde); }
+
+/* ============ COMUNS ============ */
+.titulo {
+  margin: 0; font-family: var(--display); font-weight: 400; text-transform: uppercase;
+  font-size: clamp(28px, 3vw, 46px); line-height: 1.08; letter-spacing: .12em;
+  color: var(--ferro);
+}
+.titulo--claro { color: var(--cal); }
+.titulo--pequeno { font-size: clamp(22px, 2vw, 30px); }
+.frase { margin: 18px 0 0; font-family: var(--serif); font-weight: 300; font-size: clamp(18px, 1.4vw, 21px); line-height: 1.5; color: var(--suave); max-width: 30ch; }
+.frase--clara { color: rgba(245, 242, 236, .76); }
+
+.abre { display: block; width: 100%; height: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; }
+.abre img { width: 100%; height: 100%; object-fit: cover; }
+
+/* ============ NÉVOA ============
+   Cada palavra sai de um desfoque, como de uma nuvem que se dissipa; main.js
+   liga o progresso ao scroll (--p de 0 a 1 em cada palavra). */
+.nv { display: inline-block; }
+.js [data-nevoa] .nv {
+  opacity: calc(var(--p, 0) * 1.15 - .15);
+  filter: blur(calc((1 - var(--p, 0)) * 14px));
+  transform: translate3d(0, calc((1 - var(--p, 0)) * .35em), 0) scale(calc(1.06 - var(--p, 0) * .06));
+}
+
+/* ============ ABERTURA E QUEBRA ============ */
+.abertura { padding: var(--secao) var(--margem) clamp(8px, 1.5vw, 24px); display: grid; place-items: center; }
+.abertura__frase {
+  margin: 0; max-width: 44em; text-align: center;
+  font-family: var(--serif); font-weight: 300;
+  font-size: clamp(21px, 1.9vw, 29px); line-height: 1.6; color: var(--tinta);
+}
+/* a pausa entre o exterior e a piscina: uma linha só, com ar à volta */
+.quebra { padding: clamp(110px, 16vw, 230px) var(--margem); display: grid; place-items: center; }
+.quebra__frase { margin: 0; text-align: center; font-family: var(--serif); font-style: italic; font-weight: 300; font-size: clamp(22px, 2.2vw, 34px); line-height: 1.4; color: var(--suave); }
+
+/* ============ SECÇÕES PRESAS ============
+   A secção tem a altura do curso (--intro + (--n − 1) × --passo); o palco fica
+   preso. Depois da primeira descida, main.js põe .is-solta: a secção encolhe
+   para um ecrã e as setas aparecem (sem obrigar a re-percorrer). */
+.presa { position: relative; --passo: 80svh; height: calc(100svh + var(--intro, 0) * 1svh + (var(--n, 1) - 1) * var(--passo)); }
+.presa.is-solta { height: 100vh; height: 100svh; }
+.presa__palco { position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden; }
+.presa__moldura { position: relative; overflow: hidden; background: var(--linho); box-shadow: var(--sombra); }
+.presa__foto { position: absolute; inset: 0; overflow: hidden; }
+.presa__foto img { width: 100%; height: 100%; object-fit: cover; }
+.presa__conta { display: flex; align-items: center; gap: 14px; margin: 0; font-family: var(--display); font-size: 12.5px; letter-spacing: .2em; color: var(--suave); font-variant-numeric: lining-nums; }
+.presa__conta i { position: relative; width: 56px; height: 1px; background: currentColor; opacity: .35; overflow: hidden; }
+.presa__conta i::after { content: ""; position: absolute; inset: 0; background: currentColor; transform: scaleX(var(--prog, 0)); transform-origin: left; }
+.presa__legendas { position: relative; }
+.presa__legendas .legenda { position: absolute; left: 0; right: 0; top: 0; display: grid; gap: 8px; opacity: 0; transform: translateY(14px); transition: opacity .6s ease, transform .8s var(--suave-saida); }
+.presa__legendas .legenda.is-ativa { position: relative; opacity: 1; transform: none; transition-delay: .12s; }
+.presa__legendas .legenda b { font-family: var(--display); font-weight: 400; font-size: 14px; letter-spacing: .2em; text-transform: uppercase; }
+.presa__legendas .legenda span { font-family: var(--serif); font-weight: 300; font-size: 19px; line-height: 1.45; }
+.presa__pe { display: flex; align-items: center; justify-content: space-between; gap: 20px; }
+.presa__setas { display: flex; gap: 10px; }
+.presa__setas[hidden] { display: none; }
+.presa__setas button { display: grid; place-items: center; width: 48px; height: 48px; border-radius: 50%; border: 1px solid currentColor; background: transparent; color: inherit; cursor: pointer; opacity: .75; transition: opacity .3s, background-color .3s, color .3s; }
+.presa__setas button:hover { opacity: 1; background: var(--ferro); border-color: var(--ferro); color: #fff; }
+.presa__setas svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.presa__setas button:disabled { opacity: .2; pointer-events: none; }
+/* coluna de texto ao lado de uma moldura */
+.presa__lado { align-self: stretch; display: flex; flex-direction: column; justify-content: center; gap: clamp(26px, 5svh, 52px); max-width: 360px; }
+.presa__lado .presa__legendas { min-height: 120px; }
+
+/* exterior: legenda à esquerda, moldura 3:2 à direita (a foto inteira, sem cortes) */
+.exterior .presa__palco {
+  display: grid; grid-template-columns: minmax(240px, 1fr) auto; align-items: center; gap: clamp(28px, 4vw, 80px);
+  padding: 88px var(--margem) clamp(24px, 5svh, 56px);
+}
+.exterior__moldura {
+  height: min(calc(100svh - 88px - clamp(24px, 5svh, 56px)), calc((100vw - 2 * var(--margem) - 240px - clamp(28px, 4vw, 80px)) / 1.5));
+  aspect-ratio: 3 / 2;
+}
+
+/* ============ A PISCINA ============
+   No computador a moldura abre-se até ao ecrã inteiro; as fotos seguintes
+   entram por cima com um esvair lento. O texto vai direto sobre a foto, com
+   uma sombra difusa por trás (sem caixa). */
+.piscina { --passo: 70svh; background: var(--cal); }
+.piscina__moldura {
+  position: absolute; inset: 0; overflow: hidden;
+  clip-path: inset(var(--in-y, 14vh) var(--in-x, 16vw) var(--in-y, 14vh) var(--in-x, 16vw));
+}
+.piscina .presa__foto img { transform-origin: 50% 50%; }
+.piscina__texto {
+  position: absolute; left: var(--margem); bottom: var(--margem); z-index: 3; max-width: 560px;
+  display: grid; gap: 14px; color: #fff;
+  text-shadow: 0 1px 18px rgba(0, 0, 0, .55), 0 0 2px rgba(0, 0, 0, .25);
+  opacity: var(--txt, 0); transform: translateY(calc((1 - var(--txt, 0)) * 30px));
+}
+.piscina__texto::before { content: ""; position: absolute; inset: -90px -140px -70px -120px; z-index: -1; pointer-events: none; background: radial-gradient(closest-side, rgba(12, 14, 10, .42), rgba(12, 14, 10, 0)); }
+.piscina__titulo { margin: 0; font-family: var(--display); font-weight: 400; font-size: clamp(28px, 3vw, 46px); letter-spacing: .12em; text-transform: uppercase; line-height: 1.08; }
+.piscina .presa__legendas { min-height: 30px; }
+.piscina .legenda span { font-size: 20px; }
+.piscina .presa__conta { color: rgba(255, 255, 255, .85); }
+.piscina .presa__pe { margin-top: 8px; }
+.piscina .presa__setas button:hover { background: #fff; border-color: #fff; color: var(--ferro); }
+
+/* ============ INTERIOR ============
+   Moldura alta, na proporção das fotos (3:2): nada fica cortado. O texto ao
+   lado, à direita, sem caixa. */
+.interior { background: var(--linho); }
+.interior .presa__palco {
+  display: grid; grid-template-columns: auto minmax(220px, 1fr); align-items: center; gap: clamp(28px, 4vw, 72px);
+  padding: 84px var(--margem) clamp(20px, 4svh, 44px);
+}
+.interior__moldura {
+  height: min(calc(100svh - 84px - clamp(20px, 4svh, 44px)), calc((100vw - 2 * var(--margem) - 220px - clamp(28px, 4vw, 72px)) / 1.5));
+  aspect-ratio: 3 / 2; background: var(--granito);
+}
+.interior .presa__foto img { will-change: transform; }
+
+/* ============ QUARTOS ============
+   Adaptado do 145 Townhouse, mais simples: um painel preso do tamanho do
+   ecrã, no verde do sofá. À esquerda, numa coluna estreita, «Quartos» grande
+   no topo, o nome do quarto em duas linhas que sobem e, em baixo, os
+   separadores com a barra que se enche com o scroll. À direita, a foto no
+   formato original (3:2; as casas de banho ao alto inteiras, ao centro),
+   que se esvai e assenta a cada passo. */
+.quartos { position: relative; background: var(--sofa); color: var(--cal); }
+.quartos__titulo { margin: 0; font-family: var(--display); font-weight: 400; text-transform: uppercase; font-size: clamp(30px, 3.2vw, 52px); line-height: 1; letter-spacing: .1em; color: var(--cal); }
+.quartos__pista { position: relative; }
+.quartos__palco {
+  position: sticky; top: 0; height: 100vh; height: 100svh; overflow: hidden;
+  display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: clamp(32px, 4vw, 72px);
+  padding: 84px var(--margem) clamp(24px, 5svh, 56px);
+  --qw: min(calc((100svh - 84px - clamp(24px, 5svh, 56px)) * 1.5), calc(100vw - 2 * var(--margem) - 280px - clamp(32px, 4vw, 72px)));
+}
+.quartos.is-livre .quartos__palco { position: relative; }
+.quartos__lado { height: calc(var(--qw) / 1.5); min-width: 0; display: grid; grid-template-rows: auto minmax(0, 1fr) auto; }
+.quartos__textos { position: relative; align-self: center; min-height: 9em; }
+.qtexto { position: absolute; left: 0; right: 0; top: 50%; transform: translateY(-50%); opacity: 0; transition: opacity .25s; pointer-events: none; }
+.qtexto.is-atual { opacity: 1; transition: none; }
+.qtexto__nome { margin: 0; font-family: var(--serif); font-weight: 300; font-size: clamp(34px, 3.1vw, 52px); line-height: 1.08; letter-spacing: -.01em; }
+.qlinha { display: block; overflow: hidden; padding-bottom: .12em; margin-bottom: -.12em; }
+.qlinha > * { display: inline-block; transform: translate3d(0, 110%, 0); }
+.qlinha em { font-style: italic; font-size: .72em; color: var(--granito); }
+.qtexto.is-atual .qlinha > * { transform: none; transition: transform 1s var(--suave-saida) .1s; }
+.qtexto.is-atual .qlinha + .qlinha > * { transition-delay: .2s; }
+.quartos__abas { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.quartos__abas button {
+  display: block; width: 100%; min-height: 44px; padding: 0; border: 0; background: none; text-align: left; cursor: pointer;
+  opacity: .45; transition: opacity .4s; font-family: var(--display); font-size: 13px; letter-spacing: .2em; font-variant-numeric: lining-nums;
+}
+.quartos__abas button:hover, .quartos__abas button[aria-pressed="true"] { opacity: 1; }
+.quartos__abas b { font-weight: 400; }
+.quartos__seg { display: block; height: 1px; margin-bottom: 12px; background: rgba(245, 242, 236, .24); }
+.quartos__seg span { display: block; height: 3px; margin-top: -1px; background: var(--cal); transform-origin: 0 50%; transform: scaleX(0); }
+.quartos.is-livre .quartos__seg span { transition: transform .8s var(--suave-saida); }
+.quartos__foto { position: relative; width: var(--qw); aspect-ratio: 3 / 2; overflow: hidden; background: #262b20; box-shadow: 0 40px 80px -36px rgba(0, 0, 0, .7); }
+.quartos__abre { position: absolute; inset: 0; display: block; width: 100%; padding: 0; border: 0; background: none; cursor: zoom-in; }
+.qfoto { position: absolute; inset: 0; overflow: hidden; opacity: 0; transition: opacity .8s var(--suave-saida) .2s; }
+/* as casas de banho ao alto: inteiras, ao centro da moldura */
+.qfoto--alto { left: 50%; right: auto; width: auto; aspect-ratio: var(--r); transform: translateX(-50%); }
+.qfoto.is-atual { z-index: 1; opacity: 1; transition: opacity .8s var(--suave-saida); }
+.qfoto img { width: 100%; height: 100%; object-fit: cover; transform: scale(1.06); transition: transform 1.4s var(--suave-saida) .2s; }
+.qfoto.is-atual img { transform: none; transition: transform 1.4s var(--suave-saida); }
+.qfoto__nota {
+  position: absolute; z-index: 1; left: 22px; bottom: 20px;
+  font-family: var(--display); font-size: 12.5px; letter-spacing: .2em; text-transform: uppercase; color: #fff;
+  text-shadow: 0 1px 14px rgba(0, 0, 0, .6), 0 0 2px rgba(0, 0, 0, .35);
+}
+.quartos__setas { position: absolute; z-index: 2; right: 18px; bottom: 18px; display: none; gap: 10px; }
+.quartos.is-livre .quartos__setas { display: flex; }
+.quartos__setas button { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, .6); background: rgba(27, 29, 25, .25); color: #fff; cursor: pointer; transition: background-color .3s, color .3s; }
+.quartos__setas button:hover { background: #fff; color: var(--ferro); }
+.quartos__setas button:disabled { opacity: .3; pointer-events: none; }
+.quartos__setas svg { width: 20px; height: 20px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+
+/* ============ COMODIDADES ============
+   Como no Solar Antigo: uma faixa de cartões que anda sozinha, devagar, e
+   não acaba (main.js, «COMODIDADES»). Arrasta-se com o rato ou o dedo. */
+.comodidades { padding: var(--secao) 0 calc(var(--secao) * .5); background: var(--linho); overflow: hidden; }
+.comodidades__titulo { text-align: center; padding: 0 var(--margem); }
+.comodidades__titulo::after { content: ""; display: block; width: 40px; height: 1px; margin: 26px auto 0; background: rgba(35, 37, 31, .3); }
+.comod-pista { margin-top: clamp(28px, 3.5vw, 48px); padding: 8px 0 44px; overflow-x: auto; overflow-y: hidden; scrollbar-width: none; -webkit-overflow-scrolling: touch; cursor: grab; }
+.comod-pista::-webkit-scrollbar { display: none; }
+.comod-pista.is-agarrada { cursor: grabbing; }
+.comod-pista:focus-visible { outline: 2px solid var(--verde); outline-offset: 4px; }
+.comod-lista { display: flex; gap: 14px; list-style: none; margin: 0; padding: 0 var(--margem); width: max-content; }
+.comod {
+  flex: 0 0 auto; width: 236px; padding: 26px 22px 24px;
+  border-radius: var(--raio); background: var(--cal);
+  box-shadow: 0 18px 40px -26px rgba(27, 29, 25, .4);
+  user-select: none; -webkit-user-select: none;
+}
+.comod svg { display: block; width: 28px; height: 28px; margin-bottom: 30px; fill: none; stroke: var(--verde); stroke-width: 1.3; stroke-linecap: round; stroke-linejoin: round; }
+.comod b { display: block; font-weight: 300; font-size: 18px; line-height: 1.35; color: var(--tinta); }
+
+/* ============ REGIÃO ============ */
+.regiao .presa__palco {
+  display: grid; grid-template-columns: minmax(260px, 5fr) 7fr; align-items: center; gap: clamp(28px, 5vw, 96px);
+  padding: 84px var(--margem) clamp(24px, 5svh, 56px); max-width: 1560px; margin: 0 auto;
+}
+.regiao .presa__lado { max-width: 420px; gap: 0; }
+.regiao__lista { list-style: none; margin: clamp(28px, 5svh, 52px) 0 0; padding: 0; }
+.regiao__lista li { border-top: 1px solid rgba(35, 37, 31, .14); }
+.regiao__lista li:last-child { border-bottom: 1px solid rgba(35, 37, 31, .14); }
+.regiao__lista button { display: grid; width: 100%; text-align: left; padding: 20px 0; border: 0; background: none; cursor: pointer; }
+.regiao__nome { font-family: var(--display); font-size: clamp(17px, 1.5vw, 22px); letter-spacing: .14em; text-transform: uppercase; color: rgba(35, 37, 31, .36); transition: color .5s; }
+.regiao__linha { display: block; overflow: hidden; max-height: 0; font-size: 18px; color: var(--suave); transition: max-height .6s var(--suave-saida), margin .6s var(--suave-saida); }
+.regiao__lista .is-ativa .regiao__nome { color: var(--ferro); }
+.regiao__lista .is-ativa .regiao__linha { max-height: 3em; margin-top: 8px; }
+.regiao__moldura { width: 100%; aspect-ratio: 3 / 2; max-height: calc(100svh - 84px - clamp(24px, 5svh, 56px)); }
+
+/* ============ FECHO ============ */
+.fecho { position: relative; height: 100vh; height: 100svh; min-height: 560px; overflow: hidden; color: #fff; }
+.fecho__foto { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 50%; }
+.fecho__texto { position: absolute; left: var(--margem); bottom: var(--margem); display: grid; justify-items: start; gap: 26px; max-width: min(560px, calc(100vw - 2 * var(--margem))); text-shadow: 0 1px 18px rgba(0, 0, 0, .5), 0 0 2px rgba(0, 0, 0, .2); }
+.fecho__texto::before { content: ""; position: absolute; inset: -110px -160px -80px -140px; z-index: -1; pointer-events: none; background: radial-gradient(closest-side, rgba(12, 14, 10, .4), rgba(12, 14, 10, 0)); }
+.fecho__titulo { margin: 0; font-family: var(--display); font-weight: 400; font-size: clamp(30px, 3.4vw, 52px); line-height: 1.1; letter-spacing: .08em; text-transform: uppercase; }
+.fecho__airbnb { margin: -8px 0 0; font-size: 15px; }
+.fecho .botao-pilula { text-shadow: none; }
+
+/* ============ RODAPÉ ============ */
+.rodape { background: var(--ferro); color: rgba(245, 242, 236, .76); padding: clamp(64px, 8vw, 110px) var(--margem) 36px; font-size: 16px; }
+.rodape a { color: var(--cal); }
+.rodape__cima { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 40px; max-width: 1560px; margin: 0 auto; padding-bottom: 56px; border-bottom: 1px solid rgba(245, 242, 236, .14); }
+.rodape__marca { display: block; text-decoration: none; font-family: var(--display); font-size: clamp(30px, 3.2vw, 48px); letter-spacing: .01em; color: var(--cal); line-height: 1; margin-bottom: 24px; }
+.rodape address { font-style: normal; line-height: 1.6; }
+.rodape__chegar { display: inline-flex; align-items: center; gap: 10px; margin-top: 24px; padding: 12px 22px; border-radius: 999px; background: var(--cal); color: var(--ferro) !important; text-decoration: none; font-family: var(--display); font-size: 12.5px; letter-spacing: .14em; text-transform: uppercase; }
+.rodape__chegar svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; }
+.rodape__chegar:hover { background: var(--granito); }
+.rodape__rotulo { margin: 0 0 14px; font-family: var(--display); font-size: 11.5px; letter-spacing: .22em; text-transform: uppercase; color: rgba(245, 242, 236, .5); }
+.rodape ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 6px; }
+.rodape__numeros { font-family: var(--display); font-size: 14.5px; letter-spacing: .03em; font-variant-numeric: lining-nums tabular-nums; }
+.rodape__canais a { text-decoration: none; border-bottom: 1px solid rgba(245, 242, 236, .3); }
+.rodape__legal { max-width: 1560px; margin: 0 auto; padding-top: 28px; font-size: 14px; color: rgba(245, 242, 236, .56); }
+.rodape__legal p { margin: 0 0 8px; }
+.rodape__links { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 26px; margin-top: 18px !important; }
+.rodape__livro { display: inline-flex; padding: 8px 16px; border: 1px solid rgba(245, 242, 236, .4); border-radius: 999px; text-decoration: none; }
+
+/* ============ BARRA DO TELEMÓVEL ============ */
+.barra { display: none; }
+
+/* ============ VISOR ============ */
+.visor { position: fixed; inset: 0; z-index: 90; background: rgba(20, 22, 19, .97); color: var(--cal); display: grid; grid-template-rows: auto 1fr auto; }
+.visor[hidden] { display: none; }
+.visor__topo { display: flex; align-items: center; gap: 16px; padding: 16px var(--margem); }
+.visor__titulo { margin: 0; font-family: var(--display); font-size: 13px; letter-spacing: .2em; text-transform: uppercase; }
+.visor__conta { margin: 0 auto 0 0; font-family: var(--display); font-size: 12px; letter-spacing: .14em; opacity: .6; }
+.visor__fechar, .visor__nav { display: grid; place-items: center; width: 46px; height: 46px; border-radius: 50%; border: 1px solid rgba(245, 242, 236, .25); background: rgba(245, 242, 236, .06); cursor: pointer; }
+.visor svg { width: 22px; height: 22px; fill: none; stroke: currentColor; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; }
+.visor__palco { position: relative; display: grid; place-items: center; padding: 0 calc(var(--margem) + 56px); min-height: 0; }
+.visor__palco img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.visor__nav { position: absolute; top: 50%; transform: translateY(-50%); }
+.visor__nav--ant { left: var(--margem); }
+.visor__nav--seg { right: var(--margem); }
+.visor__nav[hidden] { display: none; }
+.visor__legenda { margin: 0; padding: 16px var(--margem) 24px; text-align: center; font-size: 17px; opacity: .85; }
+
+/* ============ ECRÃS MÉDIOS ============ */
+@media (max-width: 1100px) {
+  .nav { display: none; }
+  .topo { grid-template-columns: 1fr auto; }
+}
+
+/* ============ TELEMÓVEL ============ */
+@media (max-width: 760px) {
+  .topo { height: 62px; }
+  .topo.is-solido { height: 56px; }
+  .topo__reservar { display: none; }
+  .hero__texto { bottom: 14px; }
+  .topo::before { inset: 0 0 -30px 0; }
+  .hero__nome { font-size: 11.2vw; }
+  .hero__onde { margin-top: 8px; font-size: 10.5px; letter-spacing: .18em; gap: 2px 10px; flex-direction: column; }
+  .hero__onde span + span::before { content: none; }
+  .marca { font-size: 18px; }
+
+  .presa { --passo: 65svh; }
+  .presa__lado { max-width: none; justify-content: flex-start; gap: 16px; align-self: auto; }
+  .presa__lado .presa__legendas { min-height: 92px; }
+  .presa__legendas .legenda span { font-size: 17px; }
+
+  .exterior .presa__palco { grid-template-columns: 1fr; grid-template-rows: auto auto; align-content: center; gap: 22px; padding: 76px var(--margem) 96px; }
+  .exterior__moldura { order: -1; width: 100%; height: auto; }
+
+  /* piscina: a moldura abre-se até à largura do ecrã (6:5) e o texto fica por baixo */
+  .piscina { --topo-m: max(74px, calc((100svh - 83.333vw - 190px) / 2)); }
+  .piscina__moldura { inset: var(--topo-m) 0 auto 0; aspect-ratio: 6 / 5; }
+  .piscina__texto { top: calc(var(--topo-m) + 83.333vw + 22px); bottom: auto; right: var(--margem); max-width: none; gap: 10px; color: var(--tinta); text-shadow: none; }
+  .piscina__texto::before { content: none; }
+  .piscina__titulo { font-size: 26px; }
+  .piscina .legenda span { font-size: 17px; }
+  .piscina .presa__conta { color: var(--suave); }
+  .piscina .presa__legendas { min-height: 50px; }
+
+  .interior .presa__palco { grid-template-columns: 1fr; align-content: center; gap: 22px; padding: 76px var(--margem) 96px; }
+  .interior__moldura { width: 100%; height: auto; }
+
+  /* quartos: a foto em cima, à largura; os separadores e o nome por baixo */
+  .quartos__titulo { order: -2; font-size: 9vw; }
+  .quartos__palco { --qw: calc(100vw - 2 * var(--margem)); display: flex; flex-direction: column; justify-content: center; align-items: stretch; gap: 22px; padding: 72px var(--margem) 96px; }
+  .quartos__foto { order: -1; flex: none; }
+  .quartos__lado { display: contents; }
+  .quartos__abas { order: 0; gap: 8px; margin-top: -4px; }
+  .quartos__abas button { min-height: 32px; font-size: 12px; }
+  .quartos__seg { margin-bottom: 8px; }
+  .quartos__textos { order: 1; align-self: stretch; min-height: 3.2em; margin-top: -8px; }
+  .qtexto { top: 0; transform: none; }
+  .qtexto__nome { font-size: 30px; }
+  .qtexto__nome .qlinha { display: inline-block; vertical-align: baseline; margin-right: .2em; }
+  .qlinha em { font-size: .66em; }
+  .qfoto__nota { left: 10px; bottom: 10px; font-size: 10px; letter-spacing: .12em; white-space: nowrap; }
+  .quartos__setas { right: 10px; bottom: 10px; }
+  .quartos__setas button { width: 40px; height: 40px; }
+
+  .comod { width: 196px; padding: 20px 18px; }
+  .comod svg { margin-bottom: 22px; }
+  .comod b { font-size: 16.5px; }
+
+  .regiao .presa__palco { display: flex; flex-direction: column; justify-content: center; align-items: stretch; gap: 18px; padding: 72px var(--margem) 92px; }
+  .regiao .presa__lado { display: contents; }
+  .regiao .frase { display: none; }
+  .regiao__moldura { order: 1; aspect-ratio: 6 / 5; max-height: none; }
+  .regiao__lista { order: 2; margin: 0; }
+  .regiao__lista button { padding: 13px 0; }
+  .regiao__nome { font-size: 15px; }
+  .regiao__linha { font-size: 16px; }
+
+  .fecho__texto { bottom: calc(var(--margem) + 70px); }
+  .fecho__titulo { font-size: 26px; }
+  .rodape { padding-bottom: 110px; }
+  .rodape__cima { grid-template-columns: 1fr; }
+
+  .barra {
+    display: grid; grid-template-columns: 1.4fr 1fr; gap: 8px;
+    position: fixed; left: 10px; right: 10px; bottom: calc(10px + env(safe-area-inset-bottom)); z-index: 60;
+    padding: 6px; border-radius: 999px;
+    background: rgba(245, 242, 236, .84); -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px);
+    box-shadow: 0 12px 30px -12px rgba(0, 0, 0, .35);
+  }
+  .barra a { display: grid; place-items: center; height: 46px; border-radius: 999px; text-decoration: none; font-family: var(--display); font-size: 12.5px; letter-spacing: .16em; text-transform: uppercase; color: var(--ferro); }
+  .barra__principal { background: var(--ferro); color: var(--cal) !important; }
+  .visor__palco { padding: 0 8px; }
+  .visor__nav { top: auto; bottom: -58px; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { transition-duration: .01ms !important; animation-duration: .01ms !important; }
+  .js [data-nevoa] .nv, .js .hero__linha > span { opacity: 1 !important; filter: none !important; transform: none !important; }
+}
