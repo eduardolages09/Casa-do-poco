@@ -20,6 +20,7 @@ As fotos do Airbnb vinham comprimidas: o dossiê tinha a versão por defeito, de
 ### Ronda 6 (2026-10-15)
 
 - **Cantos retos em todas as fotos:** saiu o raio das molduras do exterior e do interior (`.presa__moldura`), da foto dos quartos, da abertura da piscina (o `clip-path` deixou de ter `round`), da entrada das fotos ligada ao scroll e do visor. As animações ficam iguais. Os cartões das comodidades, que não têm foto, mantêm os cantos suaves.
+- **Scroll fluido** (o Eduardo achou-o «meio travado» noutro PC). A causa principal: quando uma galeria presa (exterior, piscina, interior, região, quartos) encolhe depois da primeira descida, o salto de compensação era imediato e matava o embalo da roda; o scroll parava a seco em cada secção. Agora o salto guarda o resto do embalo e a página continua a deslizar. Além disso, as animações correm no mesmo frame do Lenis (antes ficavam um frame atrás), cada frame mede tudo antes de escrever (sem layouts forçados), as galerias que não mudam não são redesenhadas e as fotos descodificam-se antes de entrar no ecrã. Experimentou-se pôr as molduras em camadas próprias (`will-change`), mas as fotos perdiam nitidez, por isso o CSS ficou como estava. Conferido: fotos iguais ao pixel à versão anterior, sem erros, no PC, no telemóvel ao alto e deitado.
 
 ### Ronda 5 (2026-10-14)
 

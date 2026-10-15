@@ -1,4 +1,4 @@
-/* Casa do Poço — versão base (v5). A foto do hero nunca é transformada. Sem dependências além do Lenis (scroll suave). */
+/* Casa do Poço — versão base (v6). A foto do hero nunca é transformada. Sem dependências além do Lenis (scroll suave). */
 (function () {
   'use strict';
 
@@ -29,9 +29,21 @@
     if (lenis) lenis.scrollTo(y, { duration: dur || 1.4 });
     else window.scrollTo({ top: y, behavior: reduzido ? 'auto' : 'smooth' });
   }
+  // salta sem se notar e sem perder o embalo que a roda ainda levava
+  // (um salto imediato do Lenis travava o scroll a seco)
   function saltarPara(y) {
-    if (lenis) { lenis.resize(); lenis.scrollTo(y, { immediate: true, force: true }); }
-    else window.scrollTo(0, y);
+    if (!lenis) { window.scrollTo(0, y); return; }
+    var resto = lenis.targetScroll - lenis.animatedScroll;
+    lenis.resize();
+    lenis.scrollTo(y, { immediate: true, force: true });
+    if (Math.abs(resto) > 0.5) lenis.scrollTo(y + resto, { lerp: lenis.options.lerp, force: true, programmatic: false });
+  }
+  // dentro do frame do Lenis, o salto fica para logo a seguir (antes de pintar)
+  var salto = 0;
+  function pedirSalto(d) {
+    if (!d) return;
+    if (!salto) Promise.resolve().then(function () { var s = salto; salto = 0; saltarPara(scrollY() - s); });
+    salto += d;
   }
 
   /* ============ NÉVOA ============
@@ -51,9 +63,10 @@
     });
     return { el: el, spans: spans };
   });
-  function nevoa() {
-    nevoas.forEach(function (n) {
-      var r = n.el.getBoundingClientRect();
+  function nevoa(rects) {
+    nevoas.forEach(function (n, k) {
+      var r = rects[k];
+      if (r.top > vh + 40 || r.bottom < -40) return;
       var ini = vh * 0.95, fim = vh * (estreito() ? 0.38 : 0.45);
       var p = reduzido ? 1 : limitar((ini - r.top) / (ini - fim), 0, 1);
       var N = n.spans.length, janela = 0.42;
@@ -98,9 +111,14 @@
     return g;
   });
 
-  // as fotos de cada secção descarregam todas quando ela se aproxima
+  // as fotos de cada secção descarregam todas quando ela se aproxima, e
+  // descodificam-se logo, para não o fazerem a meio do scroll
+  function preparar(img) {
+    img.loading = 'eager';
+    if (img.decode) img.decode().catch(function () {});
+  }
   (function () {
-    var carregar = function (sec) { lista('img', sec).forEach(function (i) { i.loading = 'eager'; }); };
+    var carregar = function (sec) { lista('img', sec).forEach(preparar); };
     if (!('IntersectionObserver' in window)) { presas.forEach(function (g) { carregar(g.sec); }); return; }
     var perto = new IntersectionObserver(function (en) {
       en.forEach(function (e) { if (e.isIntersecting) { carregar(e.target); perto.unobserve(e.target); } });
@@ -125,6 +143,7 @@
   }
 
   function desenhar(g, t) {
+    if (t === g.t && g.ativa !== -1) return;   // nada mudou: não tocar no estilo
     g.t = t;
     for (var k = 1; k < g.n; k++) {
       var f = g.fotos[k], el = f.firstElementChild;
@@ -199,10 +218,10 @@
     });
   });
 
-  function presaScroll(g) {
-    if (g.solta) return;
-    var r = g.sec.getBoundingClientRect();
-    var curso = g.sec.offsetHeight - vh;
+  function presaScroll(g, r) {
+    if (g.solta || !r) return;
+    if (r.top > vh && g.t === 0 && (!g.intro || g.a === 0)) return;   // ainda não chegou
+    var curso = r.height - vh;
     var introPx = g.intro / 100 * vh;
     var px = -r.top;
     if (g.intro) abrir_moldura(g, reduzido ? 1 : limitar(px / introPx, 0, 1));
@@ -212,7 +231,7 @@
     // cada passo: um momento parado, a troca, outro momento parado
     var t = g.n < 2 ? 0 : (reduzido ? Math.round(bruto) : k + suave(limitar((f - 0.16) / 0.68, 0, 1)));
     desenhar(g, t);
-    if (r.bottom < 0) saltarPara(scrollY() - soltar(g, true));
+    if (r.bottom < 0) pedirSalto(soltar(g, true));
   }
 
   /* ============ QUARTOS ============
@@ -273,10 +292,9 @@
     mostraFoto(Q.i < 0 ? 0 : Q.i);
     return compensar ? antes - qsec.offsetHeight : 0;
   }
-  function atualizaQuartos() {
-    if (!Q.presa) return;
-    var r = qpista.getBoundingClientRect();
-    if (r.bottom < -10) { saltarPara(scrollY() - soltaQuartos(true)); return; }
+  function atualizaQuartos(r) {
+    if (!Q.presa || !r) return;
+    if (r.bottom < -10) { pedirSalto(soltaQuartos(true)); return; }
     if (r.top > vh + 50 || r.bottom < -50) return;
     var p = limitar(-r.top / Math.max(1, r.height - vh), 0, 1) * NQ;
     encheQuartos(p);
@@ -304,7 +322,7 @@
   // as fotos dos quartos descarregam quando a secção se aproxima
   if ('IntersectionObserver' in window) {
     var qperto = new IntersectionObserver(function (en) {
-      if (en[0].isIntersecting) { lista('img', qsec).forEach(function (i) { i.loading = 'eager'; }); qperto.disconnect(); }
+      if (en[0].isIntersecting) { lista('img', qsec).forEach(preparar); qperto.disconnect(); }
     }, { rootMargin: '1200px 0px' });
     qperto.observe(qsec);
   }
@@ -396,9 +414,9 @@
     var el = document.querySelector(d[0]);
     return el && { el: el, pai: el.parentElement, tipo: d[1], e: -1, s: -1 };
   }).filter(Boolean);
-  function entraSai() {
-    entradas.forEach(function (x) {
-      var r = x.pai.getBoundingClientRect();
+  function entraSai(rects) {
+    entradas.forEach(function (x, k) {
+      var r = rects[k];
       if (r.top > vh + 20 || r.bottom < -20) return;
       var e = reduzido ? 1 : sai(limitar((vh - r.top) / (vh * 0.7), 0, 1));
       var sa = reduzido ? 0 : limitar((vh * 0.85 - r.bottom) / (vh * 0.85), 0, 1);
@@ -450,13 +468,28 @@
     });
   });
 
-  /* ============ A CADA SCROLL ============ */
+  /* ============ A CADA SCROLL ============
+     Com o Lenis, corre no mesmo frame em que ele move a página (as molduras
+     nunca ficam um frame atrás do scroll). Primeiro mede-se tudo e só depois
+     se escreve, para o browser não ter de refazer o layout a meio. */
+  var heroAltura = hero.offsetHeight;
+  var aCorrer = false, deNovo = false;
   function atualizar() {
-    topo.classList.toggle('is-solido', scrollY() > hero.offsetHeight - 90);
-    nevoa();
-    presas.forEach(presaScroll);
-    atualizaQuartos();
-    entraSai();
+    if (aCorrer) { deNovo = true; return; }   // um salto do scroll a meio pede outra volta
+    aCorrer = true;
+    var y = scrollY();
+    var rNevoa = nevoas.map(function (n) { return n.el.getBoundingClientRect(); });
+    var rPresas = presas.map(function (g) { return g.solta ? null : g.sec.getBoundingClientRect(); });
+    var rQuartos = Q.presa ? qpista.getBoundingClientRect() : null;
+    var rEntradas = entradas.map(function (x) { return x.pai.getBoundingClientRect(); });
+
+    topo.classList.toggle('is-solido', y > heroAltura - 90);
+    nevoa(rNevoa);
+    presas.forEach(function (g, k) { presaScroll(g, rPresas[k]); });
+    atualizaQuartos(rQuartos);
+    entraSai(rEntradas);
+    aCorrer = false;
+    if (deNovo) { deNovo = false; agendar(); }
   }
   var pedido = false;
   function agendar() {
@@ -464,10 +497,11 @@
     pedido = true;
     requestAnimationFrame(function () { pedido = false; atualizar(); });
   }
-  if (lenis) lenis.on('scroll', agendar);
-  window.addEventListener('scroll', agendar, { passive: true });
+  if (lenis) lenis.on('scroll', atualizar);
+  else window.addEventListener('scroll', agendar, { passive: true });
   window.addEventListener('resize', function () {
     vh = window.innerHeight; vw = window.innerWidth;
+    heroAltura = hero.offsetHeight;
     medeQuartos();
     presas.forEach(function (g) { if (g.intro) abrir_moldura(g, g.solta ? 1 : g.a); });
     agendar();
